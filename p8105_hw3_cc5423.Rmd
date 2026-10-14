@@ -27,8 +27,42 @@ scale_colour_discrete = scale_color_viridis_d
 scale_fill_discrete = scale_fill_viridis_d
 ```
 
-### Loading dataset:
+# Problem 1
+
+Loading dataset:
 ```{r}
 data("ny_noaa")
 ```
+
+Variables:
+
+* `id`
+* `date`
+* `prcp`: precipitation in tenth of mm
+* `snow`: snowfall in mm
+* `snwd`: snow depth in mm
+* `tmax`: max temperature in tenth of degrees C
+* `tmin`: min temperature in tenth of degrees C
+
+Data cleaning:
+```{r}
+ny_noaa =
+  ny_noaa |> 
+  mutate(month = lubridate::month(date), year = lubridate::year(date), day = lubridate::day(date),
+         prcp = prcp/100, snow = snow/10, snwd = snwd/10, 
+         tmax = as.numeric(tmax), tmin = as.numeric(tmin),
+         tmax = tmax/10, tmin = tmin/10)
+```
+
+* Separate `date` variable into `month`, `day`, `year` variables
+* Converting `prcp`, `snow`, and `snwd` into centimeters
+* Converting `tmax` and `tmin` from chracter to numeric
+* Converting `tmax` and `tmin` from tenth of degrees C into degrees C
+
+For snowfall, what are the most commonly observed values? 
+```{r}
+
+```
+
+
 
