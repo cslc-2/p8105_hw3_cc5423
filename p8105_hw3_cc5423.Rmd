@@ -34,15 +34,17 @@ Loading dataset:
 data("ny_noaa")
 ```
 
-Variables:
+This dataset has `r nrow(ny_noaa)` observations and `r ncol(ny_noaa)` variables. It is describing precipitation and temperature across several weather stations. There are `r sum(is.na(ny_noaa))` missing values across the whole dataset, which is quite a bit.
+The variables include the following:
 
-* `id`
-* `date`
+* `id`: station id
+* `date`: date in YYYY-MM-DD format
 * `prcp`: precipitation in tenth of mm
 * `snow`: snowfall in mm
 * `snwd`: snow depth in mm
 * `tmax`: max temperature in tenth of degrees C
 * `tmin`: min temperature in tenth of degrees C
+
 
 Data cleaning:
 ```{r}
@@ -56,13 +58,54 @@ ny_noaa =
 
 * Separate `date` variable into `month`, `day`, `year` variables
 * Converting `prcp`, `snow`, and `snwd` into centimeters
-* Converting `tmax` and `tmin` from chracter to numeric
+* Converting `tmax` and `tmin` from character to numeric
 * Converting `tmax` and `tmin` from tenth of degrees C into degrees C
 
 For snowfall, what are the most commonly observed values? 
 ```{r}
+ny_noaa |> 
+  group_by(snow) |> 
+  summarize(n_obs = n())
+```
+The most commonly observed values are 
+
+Two-panel plot showing average max temperature in January and in July: 
+```{r}
+ny_noaa |> 
+  filter(month == c(1, 7)) |> 
+  group_by(id, month, year) |> 
+  summarize(mean_tmax = mean(tmax, na.rm = TRUE)) |> 
+  ggplot(aes(x = year, y = mean_tmax)) +
+  geom_point(alpha = .25) +
+  facet_grid(. ~ month) +
+  labs(
+    title = "Temperature plot",
+    x = "year",
+    y = "Average max temperature (C)"
+  )
+```
+
+Two-panel plot showing tmax vs tmin for the full dataset:
+```{r}
+ny_noaa |> 
+  pivot_longer(tmax:tmin,
+               names_to = "temp_type",
+               values_to = "temp") |>
+  group_by(id) |> 
+  ggplot(aes(x = date, y = temp)) +
+  geom_smooth(se = FALSE) +
+  facet_grid(. ~ temp_type)
+```
+
+Plot showing distribution of snowfall values greater than 0 and less than 100 separately by year:
+```{r}
 
 ```
+
+
+
+
+
 
 
 
