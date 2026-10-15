@@ -100,13 +100,29 @@ Read in datasets:
 ```{r}
 demo_df =
   read_csv("data/nhanes_covar.csv", skip = 4, na = c("","NA",".")) |> 
-  janitor::clean_names()
+  janitor::clean_names() |> 
+  mutate(sex = recode(sex, `1` = "male", `2` = "female"),
+         education = as.factor(recode(education, `1` = "less than hs", `2` = "hs equivalent", `3` = "more than hs"))) |> 
+  filter(age > 21) |> 
+  drop_na()
 
 accel_df =
   read_csv("data/nhanes_accel.csv", na = c("","NA",".")) |> 
   janitor::clean_names()
 
+final_accel_df = 
+  left_join(demo_df, accel_df, by = "seqn")
 ```
+
+* include all originally observed variables
+* exclude participants less than 21 years of age
+* exclude those with missing demographic data
+* encode data with reasonable variable classes: sex is now male and female, education is a factor variable with less than hs, hs equivalent, and more than hs as different categories
+
+Producing a table for the number of men and women in each education category:
+```{r}
+```
+
 
 
 
