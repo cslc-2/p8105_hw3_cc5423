@@ -102,7 +102,7 @@ demo_df =
   read_csv("data/nhanes_covar.csv", skip = 4, na = c("","NA",".")) |> 
   janitor::clean_names() |> 
   mutate(sex = recode(sex, `1` = "male", `2` = "female"),
-         education = as.factor(recode(education, `1` = "less than hs", `2` = "hs equivalent", `3` = "more than hs"))) |> 
+         education = as.factor(recode(education, `1` = "less than high school", `2` = "high school equivalent", `3` = "more than high school"))) |> 
   filter(age > 21) |> 
   drop_na()
 
@@ -119,9 +119,36 @@ final_accel_df =
 * exclude those with missing demographic data
 * encode data with reasonable variable classes: sex is now male and female, education is a factor variable with less than hs, hs equivalent, and more than hs as different categories
 
-Producing a table for the number of men and women in each education category:
+Producing a reader-friendly table for the number of men and women in each education category:
+```{r}
+final_accel_df |> 
+  group_by(sex, education) |> 
+  summarize(n = n()) |> 
+  knitr::kable()
+```
+
+The majority of women have more than a high school degree at (n = 59). Similarly, the majority of men have more than a high scholl degree at (n = 54). 
+
+
+Visualizing the distribution of age of men and women in each education category:
+```{r}
+final_accel_df |> 
+  group_by(sex, education) |> 
+  ggplot(aes(x = age, fill = sex)) +
+  geom_density(alpha = .3) +
+  facet_grid (. ~ education)
+```
+
+More younger women than younger men have more than a high school degree, though it approximately evens out as they age. The distribution of age for those with less than a high school degree is similar across sex. Fewer younger women have a high school equivalent degree compared to younger men. However, more older women have a high school equivalent degree compared to older men. 
+
 ```{r}
 ```
+
+
+
+
+
+
 
 
 
