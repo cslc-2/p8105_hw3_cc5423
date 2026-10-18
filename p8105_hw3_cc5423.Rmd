@@ -184,7 +184,17 @@ Those with a higher education level have several outliers of peak activity level
 
 Reading in files:
 ```{r}
+jan_2020_df =
+  read_csv("data/citibike/Jan 2020 Citi.csv", na = c("","NA","."))
 
+jan_2024_df = 
+  read_csv("data/citibike/Jan 2024 Citi.csv", na = c("","NA","."))
+
+jul_2020_df =
+  read_csv("data/citibike/July 2020 Citi.csv", na = c("","NA","."))
+
+jul_2024_df = 
+  read_csv("data/citibike/July 2024 Citi.csv", na = c("","NA","."))
 ```
 
 
