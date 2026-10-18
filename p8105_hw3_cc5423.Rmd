@@ -127,7 +127,7 @@ final_accel_df |>
   knitr::kable()
 ```
 
-The majority of women have more than a high school degree at (n = 59). Similarly, the majority of men have more than a high scholl degree at (n = 54). 
+The majority of women have more than a high school degree at (n = 59). Similarly, the majority of men have more than a high school degree at (n = 54). 
 
 
 Visualizing the distribution of age of men and women in each education category:
@@ -136,13 +136,60 @@ final_accel_df |>
   group_by(sex, education) |> 
   ggplot(aes(x = age, fill = sex)) +
   geom_density(alpha = .3) +
-  facet_grid (. ~ education)
+  facet_grid (. ~ education) +
+  labs(
+    title = "Distribution of age by sex at each education level",
+    x = "Age (yrs)",
+    y = "Count"
+  )
 ```
 
 More younger women than younger men have more than a high school degree, though it approximately evens out as they age. The distribution of age for those with less than a high school degree is similar across sex. Fewer younger women have a high school equivalent degree compared to younger men. However, more older women have a high school equivalent degree compared to older men. 
 
 ```{r}
+final_accel_df |> 
+  mutate(total = rowSums(across(min1:min1440))) |> 
+  ggplot(aes(x = age, y = total, color = sex)) +
+  geom_smooth(se = FALSE) +
+  geom_point(alpha = .3) +
+  facet_grid (. ~ education) +
+  labs(
+    title = "Total activity by age and sex, stratified by education level",
+    x = "Age (yrs)",
+    y = "Total activity in a day"
+  )
 ```
+
+As age increases, the total activity in a day generally decreases across all education levels. Additionally, the difference between men and women's total activity evens out at the oldest ages in our sample. For women with a high school equivalent degree, the peak activity occurs around 40 years of age. The demographic with the highest total activity in a day is women with less than a high school degree in their mid-20s. 
+
+Three-panel plot showing the 24-hr activity time courses for each education level:
+```{r}
+final_accel_df |> 
+  pivot_longer(min1:min1440, names_to = "minute", names_prefix = "min", values_to = "activity") |> 
+  mutate(minute = as.numeric(minute), hour = minute/60) |> 
+  ggplot(aes(x = hour, y = activity, color = sex)) +
+  facet_grid (. ~ education) +
+  geom_point(alpha = 0.05) +
+  geom_smooth() +
+  labs(
+    title = "Activity over the day for each education level",
+    x = "Hour of the day",
+    y = "Activity"
+  )
+```
+
+Those with a higher education level have several outliers of peak activity level at a couple points in the day (around 8:00 am for women and around 8:00 pm for men) as opposed to the other education levels. However, across all education levels, activity is usually lowest in the beginning of the day until 5:00 am, where it increases dramatically and remains somewhat stable from 10:00 am to around 6:00 pm. The activity throughout the day is also very similar in shape for both men and women in each of the education levels.
+
+# Problem 3
+
+Reading in files:
+```{r}
+
+```
+
+
+
+
 
 
 
