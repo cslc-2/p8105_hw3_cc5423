@@ -121,7 +121,7 @@ demo_df =
   janitor::clean_names() |> 
   mutate(sex = recode(sex, `1` = "male", `2` = "female"),
          education = as.factor(recode(education, `1` = "less than high school", `2` = "high school equivalent", `3` = "more than high school"))) |> 
-  filter(age > 21) |> 
+  filter(age >= 21) |> 
   drop_na()
 
 accel_df =
@@ -233,7 +233,7 @@ all_df =
 Producing a reader-friendly table showing the total number of rides in each combination of year and month separating casual riders and Citi Bike members:
 ```{r rides_time}
 all_df |> 
-  group_by(rideable_type, month, year) |> 
+  group_by(member_casual, month, year) |> 
   summarize(N = n()) |> 
   knitr::kable()
 ```
