@@ -8,6 +8,8 @@ output: github_document
 ### Initial settings + load packages:
 ```{r message = F}
 library(tidyverse)
+library(ggridges)
+library(patchwork)
 library(p8105.datasets)
 
 knitr::opts_chunk$set(
@@ -62,42 +64,58 @@ ny_noaa_df |>
 The most commonly observed values are 0 cm (since most days of the year do not have snow), followed by missing values, then 2.5 cm.
 
 Two-panel plot showing average max temperature in January and in July: 
-```{r}
+```{r maxtemp}
 ny_noaa_df |> 
   filter(month == 1 | month == 7) |> 
+  mutate(month = recode(month, `1` = "January", `7` = "July")) |> 
   group_by(id, month, year) |> 
   summarize(mean_tmax = mean(tmax, na.rm = TRUE)) |> 
   ggplot(aes(x = year, y = mean_tmax)) +
   geom_point(alpha = .25) +
   facet_grid(. ~ month) +
   labs(
-    title = "Temperature plot",
+    title = "Maximum temperature plot",
     x = "year",
     y = "Average max temperature (C)"
   )
 ```
+The average maximum temperature is much higher in July (around 25-30 degrees C) compared to January (around -10 to 10 degrees C) across all years in our sample.
 
-Two-panel plot showing tmax vs tmin for the full dataset:
-```{r}
-ny_noaa_df |> 
+Two-panel plot showing the following:
+
+* 1. tmax vs tmin for the full dataset:
+* 2. distribution of snowfall values greater than 0 and less than 100 separately by year:
+```{r twopanel}
+tmax_tmin_p =
+  ny_noaa_df |> 
   ggplot(aes(x = tmax, y = tmin)) +
-  geom_smooth(se = FALSE)
+  geom_hex() +
+  labs(
+    title = "Maximum vs Minimum temperature",
+    x = "Maximum temperature (C)",
+    y = "Minimum temperature (C)"
+  )
+
+snow_p =
+  ny_noaa_df |> 
+  filter(0 < snow & snow < 100) |> 
+  mutate(year = as.factor(year)) |> 
+  ggplot(aes(x = snow, y = year)) +
+  geom_density_ridges() +
+  labs(
+    title = "Snowfall density plots by year",
+    x = "Snowfall (cm)",
+    y = "Year"
+  )
+
+tmax_tmin_p + snow_p
 ```
 
-Plot showing distribution of snowfall values greater than 0 and less than 100 separately by year:
-```{r}
-ny_noaa_df |> 
-  filter(0 < snow & snow < 100) |> 
-  group_by(year) |> 
-  summarize(avg_snow = mean(snow, na.rm = TRUE)) |> 
-  ggplot(aes(x = avg_snow)) +
-  geom_histogram()
-```
 
 # Problem 2
 
 Read in datasets:
-```{r}
+```{r read_accel}
 demo_df =
   read_csv("data/nhanes_covar.csv", skip = 4, na = c("","NA",".")) |> 
   janitor::clean_names() |> 
@@ -120,7 +138,7 @@ final_accel_df =
 * encode data with reasonable variable classes: sex is now male and female, education is a factor variable with less than hs, hs equivalent, and more than hs as different categories
 
 Producing a reader-friendly table for the number of men and women in each education category:
-```{r}
+```{r educ_sex}
 final_accel_df |> 
   group_by(sex, education) |> 
   summarize(n = n()) |> 
@@ -131,7 +149,7 @@ The majority of women have more than a high school degree at (n = 59). Similarly
 
 
 Visualizing the distribution of age of men and women in each education category:
-```{r}
+```{r age_educ}
 final_accel_df |> 
   group_by(sex, education) |> 
   ggplot(aes(x = age, fill = sex)) +
@@ -147,7 +165,7 @@ final_accel_df |>
 
 More younger women than younger men have more than a high school degree, though it approximately evens out as they age. The distribution of age for those with less than a high school degree is similar across sex. Fewer younger women have a high school equivalent degree compared to younger men. However, more older women have a high school equivalent degree compared to older men. 
 
-```{r}
+```{r activity}
 final_accel_df |> 
   mutate(total = rowSums(across(min1:min1440))) |> 
   ggplot(aes(x = age, y = total, color = sex)) +
@@ -165,7 +183,7 @@ final_accel_df |>
 As age increases, the total activity in a day generally decreases across all education levels. Additionally, the difference between men and women's total activity evens out at the oldest ages in our sample. For women with a high school equivalent degree, the peak activity occurs around 40 years of age. The demographic with the highest total activity in a day is women with less than a high school degree in their mid-20s. 
 
 Three-panel plot showing the 24-hr activity time courses for each education level:
-```{r}
+```{r activity_educ}
 final_accel_df |> 
   pivot_longer(min1:min1440, names_to = "minute", names_prefix = "min", values_to = "activity") |> 
   mutate(minute = as.numeric(minute), hour = minute/60) |> 
@@ -186,7 +204,7 @@ Those with a higher education level have several outliers of peak activity level
 # Problem 3
 
 Reading in and combining files:
-```{r}
+```{r read_bike}
 jan_2020_df =
   read_csv("data/citibike/Jan 2020 Citi.csv", na = c("","NA",".")) |> 
   mutate(month = "Jan", year = 2020)
@@ -213,7 +231,7 @@ all_df =
 
 
 Producing a reader-friendly table showing the total number of rides in each combination of year and month separating casual riders and Citi Bike members:
-```{r}
+```{r rides_time}
 all_df |> 
   group_by(rideable_type, month, year) |> 
   summarize(N = n()) |> 
@@ -223,7 +241,7 @@ all_df |>
 The fewest rides for casual riders happened in January 2024 (n = 6708), and the most rides for casual riders happened in July 2020 (n = 20113). In general, for casual riders, more rides happen in July than in January. The fewest rides for Citi Bike members happened in January 2020 (n = 3), and the most rides for casual riders happened in July 2024 (n = 30858). In general, for Citi Bike members, fewer rides happened in 2020 as opposed to 2024. 
 
 Table showing the 5 most popular starting stations for July 2024:
-```{r}
+```{r pop_station}
 all_df |>
   filter(month == "Jul", year == 2024) |> 
   group_by(start_station_name) |> 
@@ -238,7 +256,7 @@ all_df |>
 The most popular station in July 2024 was Pier 61 at Chelsea Piers, with 163 rides originating from this station. The second most popular station was University Pl and E 14 St, followed by W 21 St and 6 Ave. The first five most popular starting stations all look to be in mid-to-lower Manhattan.
 
 Plot to investigate the effects of day of the week, month, and year on median ride duration, swapping to default  color palette since yellow dots are not clear against the white background:
-```{r}
+```{r duration}
 jan_df =
   all_df |> 
     group_by(weekdays, month, year) |> 
@@ -266,7 +284,7 @@ ggplot(data = jan_df, aes(x = weekdays, y = med_dur, color = month)) +
 People generally have a longer median ride duration on the weekends (Saturday and Sunday) compared to the weekdays. Additionally, The median ride duration is higher in July compared to January in both 2020 and 2024. The median ride duration for both months (January and July) in 2024 are lower than the respective median ride durations for both months in 2020. 
 
 For data in 2024, figure that shows the impact of month, membership status, and bike type on the distribution of ride duration:
-```{r}
+```{r duration2}
 all_df |> 
   filter(year == 2024) |> 
   group_by(month, member_casual, rideable_type) |> 
