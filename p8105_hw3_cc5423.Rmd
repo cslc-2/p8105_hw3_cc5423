@@ -260,7 +260,7 @@ all_df |>
 
 The most popular station in July 2024 was Pier 61 at Chelsea Piers, with 163 rides originating from this station. The second most popular station was University Pl and E 14 St, followed by W 21 St and 6 Ave. The first five most popular starting stations all look to be in mid-to-lower Manhattan.
 
-Plot to investigate the effects of day of the week, month, and year on median ride duration, swapping to default  color palette since yellow dots are not clear against the white background:
+Plot to investigate the effects of day of the week, month, and year on median ride duration, swapping to default color palette since yellow dots are not clear against the white background:
 ```{r duration}
 jan_df =
   all_df |> 
@@ -283,6 +283,8 @@ ggplot(data = jan_df, aes(x = weekdays, y = med_dur, color = month)) +
     x = "Day of the Week",
     y = "Median Ride Duration"
   ) +
+  scale_x_discrete(limits = c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday",
+                              "Saturday", "Sunday")) +
   theme_minimal() +
   scale_color_discrete()
 ```
